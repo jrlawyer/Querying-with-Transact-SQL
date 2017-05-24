@@ -99,3 +99,48 @@ PIVOT(SUM(LineTotal)
 	FOR ParentProductCategoryName IN
 		([Accessories], [Bikes], [Clothing], [Components])) AS PcsPivot
 ORDER BY CompanyName;
+
+--Unpivot for fun...
+
+--Creating the table from our pivot
+CREATE TABLE #CategorySalesPivot
+(CompanyName nvarchar(128), Accessories numeric(38,6), Bikes numeric(38,6), Clothing numeric(38,6), Components numeric(38,6));
+
+INSERT INTO #CategorySalesPivot
+SELECT * 
+FROM	
+	(SELECT
+		c.CompanyName,
+		sod.LineTotal,
+		gac.ParentProductCategoryName
+	FROM SalesLT.Product AS p
+	JOIN SalesLT.vGetAllCategories AS gac ON p.ProductCategoryID = gac.ProductCategoryID
+	JOIN SalesLT.SalesOrderDetail AS sod ON p.ProductID = sod.ProductID
+	JOIN SalesLT.SalesOrderHeader AS soh ON sod.SalesOrderID = soh.SalesOrderID
+	JOIN SalesLT.Customer AS c ON soh.CustomerID = c.CustomerID
+	) AS ParentCategorySales
+PIVOT(SUM(LineTotal)
+	FOR ParentProductCategoryName IN
+		([Accessories], [Bikes], [Clothing], [Components])) AS PcsPivot
+ORDER BY CompanyName;
+
+--testing table results
+SELECT * FROM #CategorySalesPivot;
+
+--Unpivot
+SELECT 
+	CompanyName,
+	ParentCategory,
+	LineTotal
+FROM
+	(SELECT
+		CompanyName,
+		[Accessories], [Bikes], [Clothing], [Components]
+	FROM #CategorySalesPivot) AS csp 
+UNPIVOT
+	(LineTotal FOR ParentCategory IN
+		([Accessories], [Bikes], [Clothing], [Components])
+	) AS LineTotals
+
+--Results show the line total for each of the 4 ParentCategories for each company name; the totals have been aggregated, instead of seeing each individual line total
+
