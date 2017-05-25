@@ -140,3 +140,60 @@ SELECT *
 FROM SalesLT.ProductCategory 
 WHERE ProductCategoryID = '43';
 
+--MERGE EXAMPLE
+
+--Create a table with an existing call log entry and a new call log entry.
+
+SELECT * FROM SalesLT.CallLog;
+
+SELECT * FROM SalesLT.Customer
+WHERE SalesPerson = 'adventure-works\david8'
+
+CREATE TABLE SalesLT.TempCallLog
+(	
+	CallID int IDENTITY PRIMARY KEY NOT NULL,
+	CallTime datetime NOT NULL DEFAULT(GETDATE()),
+	SalesPerson nvarchar(256) NOT NULL,
+	CustomerID int NOT NULL REFERENCES SalesLT.Customer(CustomerID),
+	PhoneNumber nvarchar(25) NOT NULL,
+	Notes nvarchar(max) NULL 
+);
+GO
+--insert row with CallID of 1 to see if it updates or not
+--it updated up adding it to the bottom with a new ID number so it recognized that it was different
+INSERT INTO SalesLT.TempCallLog (SalesPerson, CustomerID, PhoneNumber, Notes)
+VALUES
+('adventure-works\david8', 20, '582-555-0113', 'Follow up on delivery');
+
+SELECT * FROM SalesLT.TempCallLog
+
+--insert row with CallID of 2 with the intent of updating notes.
+INSERT INTO SalesLT.TempCallLog (SalesPerson, CustomerID, PhoneNumber, Notes)
+VALUES
+('adventure-works\david8', 2, '170-555-0127', 'Call to schedule delivery');
+
+--insert row with CallID of 10
+SET IDENTITY_INSERT SalesLT.TempCallLog ON;
+
+INSERT INTO SalesLT.TempCallLog (CallID, SalesPerson, CustomerID, PhoneNumber, Notes)
+VALUES
+(10, 'adventure-works\david8', 2, '170-555-0127', 'Follow up on service issues');
+
+SET IDENTITY_INSERT SalesLT.TempCallLog OFF;
+
+--MERGE
+
+MERGE INTO SalesLT.CallLog AS clog
+	USING SalesLT.TempCallLog AS temp
+	ON clog.CallID = temp.CallID
+WHEN MATCHED THEN
+	UPDATE SET
+	clog.CallTime = temp.CallTime, clog.Notes = temp.Notes
+WHEN NOT MATCHED THEN
+	INSERT (CallTime, SalesPerson, CustomerID, PhoneNumber, Notes)
+	VALUES (temp.CallTime, temp.SalesPerson, temp.CustomerID, temp.PhoneNumber, temp.Notes);
+
+SELECT * FROM SalesLT.CallLog
+
+--Clearing table
+TRUNCATE TABLE SalesLT.TempCallLog
