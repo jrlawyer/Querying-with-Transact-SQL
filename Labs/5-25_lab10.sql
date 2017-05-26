@@ -46,7 +46,7 @@ SELECT * FROM SalesLT.SalesOrderDetail WHERE SalesOrderID = 10
 --Challenge 2:  Updating Bike Prices
 
 --1.  Write a WHILE loop to update bike prices
---First attempt:
+--First attempt:  New AvgPrice is 2323.1416 and new MaxPrice is 5238.9451
 
 DECLARE @MarketAvg MONEY = 2500;
 DECLARE @MarketMax MONEY = 5000;
@@ -82,25 +82,101 @@ WHILE @AvgPrice < @MarketAvg
 		BREAK;
 	END;
 
-	
+	--SELECT @AvgPrice = AVG(ListPrice), @MaxPrice = MAX(ListPrice)
+	--USE ProductCategoryID, similar to UPDATE
+	--CONTINUE
+	--PRINT STATEMENTS
 
+--Second attempt:
 
+DECLARE @MarketAvg MONEY = 3000;
+DECLARE @MarketMax MONEY = 6500;
+DECLARE @AvgPrice MONEY;
+DECLARE @MaxPrice MONEY;
 
---OTHER CODE...
-	SELECT 
-			AVG(p.ListPrice) AS AvgPrice,
-			MAX(p.ListPrice) AS MaxPrice
-		FROM SalesLT.Product as p
-		JOIN SalesLT.vGetAllCategories as gac
-		ON p.ProductCategoryID = gac.ProductCategoryID
-		WHERE gac.ParentProductCategoryName = 'Bikes';
+SELECT 
+	@AvgPrice = AVG(ListPrice), --Note:  You can either assign variables or select columns; you can't mix them together
+	@MaxPrice = MAX(ListPrice)
+FROM SalesLT.Product
+WHERE ProductCategoryID IN
+	(SELECT ProductCategoryID
+	FROM SalesLT.vGetAllCategories
+	WHERE ParentProductCategoryName LIKE 'Bikes');
 
-		SET @AvgPrice = AvgPrice;
-		SET @MaxPrice = MaxPrice;
+WHILE @AvgPrice < @MarketAvg
+	BEGIN
+		UPDATE SalesLT.Product
+		SET ListPrice = (ListPrice * 1.1)
+		WHERE ProductCategoryID IN
+			(SELECT ProductCategoryID
+			FROM SalesLT.vGetAllCategories
+			WHERE ParentProductCategoryName LIKE 'Bikes')
 
-		SELECT *
-		FROM SalesLT.Product as p
-		JOIN SalesLT.vGetAllCategories as gac
-		ON p.ProductCategoryID = gac.ProductCategoryID
-		WHERE gac.ParentProductCategoryName = 'Bikes';
+		SELECT
+			@AvgPrice = AVG(ListPrice),
+			@MaxPrice = MAX(ListPrice)
+		FROM SalesLT.Product
+		WHERE ProductCategoryID IN
+			(SELECT ProductCategoryID
+			FROM SalesLT.vGetAllCategories
+			WHERE ParentProductCategoryName LIKE 'Bikes')
+		
+		IF @MaxPrice >= @MarketMax
+			BREAK
+		ELSE
+			CONTINUE
+	END
 
+PRINT 'New average price: ' + CONVERT(VARCHAR, @AvgPrice);
+PRINT 'New max price: ' + CONVERT(VARCHAR, @MaxPrice);
+
+SELECT *
+FROM SalesLT.Product
+WHERE ProductCategoryID IN
+	(SELECT ProductCategoryID
+	FROM SalesLT.vGetAllCategories
+	WHERE ParentProductCategoryName LIKE 'Bikes')
+ORDER BY ListPrice DESC
+
+--Decreasing price 
+
+DECLARE @MarketAvg MONEY = 1586.74;
+DECLARE @MarketMax MONEY = 3578.27;
+DECLARE @AvgPrice MONEY;
+DECLARE @MaxPrice MONEY;
+
+SELECT 
+	@AvgPrice = AVG(ListPrice), 
+	@MaxPrice = MAX(ListPrice)
+FROM SalesLT.Product
+WHERE ProductCategoryID IN
+	(SELECT ProductCategoryID
+	FROM SalesLT.vGetAllCategories
+	WHERE ParentProductCategoryName LIKE 'Bikes');
+
+WHILE @AvgPrice > @MarketAvg
+	BEGIN
+		UPDATE SalesLT.Product
+		SET ListPrice = ListPrice - (ListPrice * 0.1)
+		WHERE ProductCategoryID IN
+			(SELECT ProductCategoryID
+			FROM SalesLT.vGetAllCategories
+			WHERE ParentProductCategoryName LIKE 'Bikes')
+
+		SELECT
+			@AvgPrice = AVG(ListPrice),
+			@MaxPrice = MAX(ListPrice)
+		FROM SalesLT.Product
+		WHERE ProductCategoryID IN
+			(SELECT ProductCategoryID
+			FROM SalesLT.vGetAllCategories
+			WHERE ParentProductCategoryName LIKE 'Bikes')
+		
+		IF @MaxPrice <= @MarketMax
+			BREAK
+		ELSE
+			CONTINUE
+	END
+
+PRINT 'New average price: ' + CONVERT(VARCHAR, @AvgPrice); --1478.94
+PRINT 'New max price: ' + CONVERT(VARCHAR, @MaxPrice);  --3335.18
