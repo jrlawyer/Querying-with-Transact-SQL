@@ -23,6 +23,17 @@ BEGIN CATCH
 	PRINT ERROR_MESSAGE();
 END CATCH;
 
+--Viewing newly created orders per productID
+SELECT 
+	h.SalesOrderID,  --50
+	h.DueDate,
+	h.CustomerID,
+	d.SalesOrderDetailID
+FROM SalesLT.SalesOrderHeader AS h
+JOIN SalesLT.SalesOrderDetail AS d
+ON h.SalesOrderID = d.SalesOrderID --113440
+WHERE ProductID = 680;
+
 --view orphaned orders
 SELECT 
 	h.SalesOrderID, 
