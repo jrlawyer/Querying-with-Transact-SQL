@@ -150,8 +150,8 @@ SELECT ProductCategoryID,
 	   COUNT(CASE WHEN Color = 'Silver' THEN 1 ELSE NULL END) AS 'Silver',
 	   COUNT(CASE WHEN Color = 'Blue' THEN 1 ELSE NULL END) AS 'Blue',
 	   COUNT(CASE WHEN Color = 'Multi' THEN 1 ELSE NULL END) AS 'Multi',
-	   COUNT(CASE WHEN Color = 'Grey' THEN 1 ELSE NULL END) AS 'Silver',
-	   COUNT(CASE WHEN Color = 'Silver' THEN 1 ELSE NULL END) AS 'Silver',
+	   COUNT(CASE WHEN Color = 'Grey' THEN 1 ELSE NULL END) AS 'Grey',
+	   COUNT(CASE WHEN Color = 'Yellow' THEN 1 ELSE NULL END) AS 'Yellow',
 	   COUNT(*) AS OverallCount
 FROM SalesLT.Product 
 GROUP BY ProductCategoryID
