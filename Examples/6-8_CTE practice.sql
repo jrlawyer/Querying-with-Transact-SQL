@@ -22,8 +22,7 @@ ORDER BY SalesCount, SalesYear
 SELECT SalesOrderID, OrderDate,
 	(SELECT MAX(UnitPrice)
 	FROM SalesLT.SalesOrderDetail AS sod
-	WHERE soh.SalesOrderID = sod.SalesOrderID
-	AND sod.SalesOrderDetailID IS NOT NULL) AS MaxUnitPrice
+	WHERE soh.SalesOrderID = sod.SalesOrderID) AS MaxUnitPrice
 FROM SalesLT.SalesOrderHeader AS soh
 
 --INNER JOIN removes NULLS
